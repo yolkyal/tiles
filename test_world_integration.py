@@ -24,6 +24,17 @@ class TestMove(unittest.TestCase):
 		world = self.world_event_handler.handle(world, mouse_up(20, 40))
 
 		self.assertEqual([(0, 1)], list(world.contents.keys()))
+	
+	def testMoveUnitOffGrid(self):
+		unit = Unit()
+
+		world = World(dims=(5, 5), pad=10, tile_size=20, contents={(0, 0): unit})
+
+		world = self.world_event_handler.handle(world, mouse_down(20, 20))
+		world = self.world_event_handler.handle(world, mouse_move(20, -20))
+		world = self.world_event_handler.handle(world, mouse_up(20, -20))
+
+		self.assertEqual([(0, 0)], list(world.contents.keys()))
 
 	def testMoveUnitOntoAnotherUnit(self):
 		unit_1 = Unit(attack=2)

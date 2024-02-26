@@ -17,6 +17,10 @@ class DynamicGraphicsIntegrationTest(unittest.TestCase):
 		self.world_controller = WorldController(self.unit_controller)
 		self.world_event_handler = WorldEventHandler(self.world_controller)
 		self.mock_unit_display_char_font = mock.Mock()
+		self.mock_display_char_dsurf = mock.Mock()
+		self.mock_display_char_dsurf.get_width.return_value = 10
+		self.mock_display_char_dsurf.get_height.return_value = 10
+		self.mock_unit_display_char_font.render.return_value = self.mock_display_char_dsurf
 		self.unit_drawer = UnitDrawer(self.mock_unit_display_char_font)
 		self.world_drawer = WorldDrawer(self.unit_drawer)
 
@@ -36,7 +40,8 @@ class DynamicGraphicsIntegrationTest(unittest.TestCase):
 		for pos in [(10, 10), (50, 10), (10, 50), (50, 50)]:
 			self.assertDrewRect(pos=pos, dims=(40, 40), col=(200, 200, 200))
 
-		# self.assertDrewChar(pos=(20, 20), dims=(15, 15), char='R')
+		self.assertDrewChar(pos=(30, 30), dims=(10, 10))
+		self.assertDrewChar(pos=(35, 35), dims=(10, 10))
 
 	@mock.patch('pygame.draw.rect')
 	def testDragUnitDifferentSquare(self, mock_draw_rect):
@@ -55,10 +60,15 @@ class DynamicGraphicsIntegrationTest(unittest.TestCase):
 		for pos in [(10, 10), (50, 10), (10, 50), (50, 50)]:
 			self.assertDrewRect(pos=pos, dims=(40, 40), col=(200, 200, 200))
 
-		# self.assertDrewChar(pos=(20, 20), dims=(15, 15), char='R')
+		self.assertDrewChar(pos=(30, 30), dims=(10, 10))
+		self.assertDrewChar(pos=(40, 60), dims=(10, 10))
 
 	def assertDrewRect(self, *, pos, dims, col):
-		self.assertIn(mock.call(self.mock_d_surf, col, (pos[0], pos[1], dims[0], dims[1]), 1), self.mock_draw_rect.call_args_list)
+		self.assertIn(mock.call(self.mock_d_surf, col, (pos[0], pos[1], dims[0], dims[1])), self.mock_draw_rect.call_args_list)
+		self.assertIn(mock.call(self.mock_d_surf, (50, 50, 50), (pos[0], pos[1], dims[0], dims[1]), 1), self.mock_draw_rect.call_args_list)
+
+	def assertDrewChar(self, *, pos, dims):
+		self.assertIn(mock.call(self.mock_display_char_dsurf, (pos[0] - dims[0] // 2, pos[1] - dims[1] // 2)), self.mock_d_surf.blit.call_args_list)
 
 
 def mouse_down(posx, posy):
